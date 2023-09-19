@@ -10,42 +10,43 @@ class App extends Component {
   state = {
     isLoading: false,
     error: '',
-    images: null,
+    images: [],
     searchQuery: '',
     isShowLoadMoreBtn: false,
+    page: 0,
   };
 
-  page = 1;
   perPage = 12;
 
   handleSubmitBtn = value => {
-    this.page = 1;
-    this.setState({ searchQuery: value, images: null });
+    this.setState({ searchQuery: value, page: 1, images: [] });
   };
 
-  componentDidUpdate(_, prevState) {
-    prevState.searchQuery !== this.state.searchQuery && this.fetchImages();
+  componentDidUpdate(prevProps, prevState) {
+    if (
+      this.state.page !== prevState.page ||
+      this.state.searchQuery !== prevState.searchQuery
+    ) {
+      this.fetchImages();
+    }
   }
 
   fetchImages = async () => {
     try {
+      const { searchQuery, page } = this.state;
+
       this.setState({ isLoading: true });
+
       const data = await getImagesBySearchQuery(
-        this.state.searchQuery,
-        this.page,
+        searchQuery,
+        page,
         this.perPage
       );
 
-      this.state.images
-        ? this.setState(prevState => ({
-            images: [...prevState.images, ...data.hits],
-          }))
-        : this.setState({ images: data.hits });
-
-      data.totalHits - this.perPage * this.page > this.perPage ||
-      data.totalHits - this.perPage * this.page > 0
-        ? this.setState({ isShowLoadMoreBtn: true })
-        : this.setState({ isShowLoadMoreBtn: false });
+      this.setState(prevState => ({
+        images: [...prevState.images, ...data.hits],
+        isShowLoadMoreBtn: this.state.page < Math.ceil(data.totalHits / 12),
+      }));
     } catch (error) {
       console.log(error);
     } finally {
@@ -54,15 +55,14 @@ class App extends Component {
   };
 
   handleLoadMoreBtn = () => {
-    this.page += 1;
-    this.fetchImages();
+    this.setState(prevState => ({ page: prevState.page + 1 }));
   };
 
   render() {
     return (
       <div>
         <Searchbar onSubmit={this.handleSubmitBtn} />
-        {this.state.images && (
+        {this.state.images.length > 0 && (
           <ImageGallery
             images={this.state.images}
             onImageClick={this.onImageClick}

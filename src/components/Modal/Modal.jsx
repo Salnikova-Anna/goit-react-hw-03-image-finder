@@ -16,9 +16,15 @@ class Modal extends Component {
     }
   };
 
+  handleBackdropClick = ({ target, currentTarget }) => {
+    if (target === currentTarget) {
+      this.props.hideModal();
+    }
+  };
+
   render() {
     return (
-      <Overlay onClick={this.props.hideModal}>
+      <Overlay onClick={this.handleBackdropClick}>
         <ModalStyled>
           <img src={this.props.largeImageURL} alt={this.props.tags} />
         </ModalStyled>

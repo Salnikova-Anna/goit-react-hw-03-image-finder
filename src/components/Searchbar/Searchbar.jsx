@@ -25,7 +25,6 @@ class Searchbar extends Component {
       <SearchbarHeader>
         <SearchForm onSubmit={this.handleSubmit}>
           <SearchFormButton type="submit">
-            {/* <span>Search</span> */}
             <FiSearch />
           </SearchFormButton>
 
